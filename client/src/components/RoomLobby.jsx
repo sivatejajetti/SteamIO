@@ -54,7 +54,7 @@ export default function RoomLobby({ onCreateRoom, onJoinRoom, isConnecting, addT
         <div className="md:col-span-6 space-y-6 text-left">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-netflix-red/10 border border-netflix-red/30 text-netflix-red text-xs font-semibold uppercase tracking-wider">
             <Sparkles className="w-3.5 h-3.5" />
-            <span>Private Movie Theater</span>
+            <span>Private Movie Lounge • By Teja</span>
           </div>
 
           <h1 className="text-4xl sm:text-5xl font-black tracking-tight text-white leading-[1.1]">

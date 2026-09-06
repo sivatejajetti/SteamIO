@@ -30,8 +30,8 @@ export default function Header({ room, username, isHost, onLeaveRoom, onTogglePa
           <span className="font-extrabold text-lg tracking-tight text-white flex items-center gap-1.5">
             Stream<span className="text-netflix-red">IO</span>
           </span>
-          <span className="hidden sm:inline-block text-[10px] text-slate-400 uppercase tracking-widest font-semibold ml-1">
-            Watch Together
+          <span className="text-[10px] text-amber-400 font-semibold tracking-wide flex items-center gap-1">
+            <span>By Teja</span>
           </span>
         </div>
       </div>
