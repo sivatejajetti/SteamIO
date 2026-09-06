@@ -36,6 +36,7 @@ export default function VideoPlayer({
   const [isMuted, setIsMuted] = useState(false);
   const [volume, setVolume] = useState(1);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [hasVideoError, setHasVideoError] = useState(false);
   const hideControlsTimeoutRef = useRef(null);
 
   // Auto-hide controls after inactivity
@@ -137,7 +138,11 @@ export default function VideoPlayer({
         ref={videoRef}
         src={videoUrl}
         onTimeUpdate={onTimeUpdate}
-        onLoadedMetadata={onLoadedMetadata}
+        onLoadedMetadata={(e) => {
+          setHasVideoError(false);
+          onLoadedMetadata(e);
+        }}
+        onError={() => setHasVideoError(true)}
         onClick={() => {
           if (canControl) {
             if (isPlaying) onPause();
@@ -147,6 +152,44 @@ export default function VideoPlayer({
         playsInline
         className="w-full h-full object-contain max-h-[82vh]"
       />
+
+      {/* Video Loading Error Overlay Banner */}
+      {hasVideoError && (
+        <div className="absolute inset-0 z-30 bg-black/90 backdrop-blur-md flex flex-col items-center justify-center p-6 text-center space-y-4">
+          <div className="w-16 h-16 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400">
+            <Lock className="w-8 h-8" />
+          </div>
+          <div className="max-w-md space-y-2">
+            <h3 className="text-lg font-bold text-white">Google Drive Stream Access Warning</h3>
+            <p className="text-xs text-slate-300 leading-relaxed">
+              Google Drive returned a restricted access error or virus scan prompt.
+            </p>
+            <div className="p-3 bg-black/60 rounded-xl border border-slate-800 text-left text-xs text-slate-400 space-y-1">
+              <p className="font-semibold text-slate-200">How to fix in 10 seconds:</p>
+              <p>1. Open Google Drive → Right-click video file → <strong>Share</strong>.</p>
+              <p>2. Set permissions to <strong>"Anyone with the link can view"</strong>.</p>
+              <p>3. Re-paste the link in StreamIO.</p>
+            </div>
+          </div>
+          <div className="flex gap-2">
+            <button
+              onClick={() => {
+                setHasVideoError(false);
+                if (videoRef.current) videoRef.current.load();
+              }}
+              className="px-4 py-2 bg-netflix-red hover:bg-netflix-darkRed text-white text-xs font-bold rounded-xl transition-all shadow-md"
+            >
+              Retry Stream
+            </button>
+            <button
+              onClick={onChangeVideo}
+              className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold rounded-xl transition-all"
+            >
+              Select Different Video
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Sync Status Badge (Top Left) */}
       <div className="absolute top-4 left-4 z-20 flex items-center gap-2 pointer-events-none">

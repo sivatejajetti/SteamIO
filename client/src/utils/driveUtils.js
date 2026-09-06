@@ -34,12 +34,13 @@ export function parseVideoUrl(inputUrl) {
   const driveId = extractGoogleDriveId(url);
 
   if (driveId) {
+    // Direct Google Drive Stream URL (works on Vercel, Render, Netlify, and Local)
+    const directStreamUrl = `https://drive.google.com/uc?export=download&confirm=t&id=${driveId}`;
     return {
       isGoogleDrive: true,
       driveId,
-      // Express proxy route handles CORS, Range requests, and Google Drive 302 redirects seamlessly
-      streamUrl: `${SERVER_URL}/api/videos/drive-proxy/${driveId}`,
-      fallbackUrl: `https://drive.google.com/uc?export=download&id=${driveId}`
+      streamUrl: directStreamUrl,
+      fallbackUrl: directStreamUrl
     };
   }
 
