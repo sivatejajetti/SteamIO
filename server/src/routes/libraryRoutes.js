@@ -14,6 +14,45 @@ router.get('/', (req, res) => {
   }
 });
 
+// POST /api/library/drive - Register Google Drive or direct video URL
+router.post('/drive', (req, res) => {
+  try {
+    const { originalName, url, streamUrl, uploadedBy, isGoogleDrive, driveId } = req.body;
+
+    if (!url || !streamUrl) {
+      return res.status(400).json({ error: 'Video URL and stream URL are required' });
+    }
+
+    const cleanTitle = originalName?.trim() || (isGoogleDrive ? `Google Drive Video (${driveId})` : 'Shared Video Link');
+
+    const videoInfo = {
+      id: `drive_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
+      filename: cleanTitle,
+      originalName: cleanTitle,
+      mimeType: 'video/mp4',
+      size: 0,
+      url: streamUrl,
+      sourceUrl: url,
+      isGoogleDrive: Boolean(isGoogleDrive),
+      driveId: driveId || null,
+      uploadedBy: uploadedBy?.trim() || 'Host',
+      uploadedAt: Date.now()
+    };
+
+    mediaLibrary.addVideo(videoInfo);
+
+    console.log(`[Drive] Saved Google Drive link to library for ${videoInfo.uploadedBy}: ${cleanTitle}`);
+
+    res.status(200).json({
+      message: 'Google Drive video link saved to library',
+      video: videoInfo
+    });
+  } catch (err) {
+    console.error('Error saving Google Drive video link:', err);
+    res.status(500).json({ error: 'Failed to save Google Drive video link' });
+  }
+});
+
 // DELETE /api/library/:id
 router.delete('/:id', (req, res) => {
   try {

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Film, PlayCircle, Trash2, Clock, HardDrive, User, RefreshCw, FolderOpen } from 'lucide-react';
+import { Film, PlayCircle, Trash2, Clock, HardDrive, User, RefreshCw, FolderOpen, Cloud } from 'lucide-react';
 import { SERVER_URL } from '../services/socket';
 
 export default function MediaLibrary({ onSelectVideo, currentUser, canControl, addToast }) {
@@ -119,8 +119,12 @@ export default function MediaLibrary({ onSelectVideo, currentUser, canControl, a
               className="glass-panel p-4 rounded-2xl border border-slate-800/80 hover:border-slate-600 transition-all flex flex-col justify-between group space-y-3"
             >
               <div className="flex items-start gap-3">
-                <div className="w-10 h-10 rounded-xl bg-netflix-red/10 border border-netflix-red/30 flex items-center justify-center text-netflix-red shrink-0 group-hover:scale-105 transition-transform">
-                  <Film className="w-5 h-5" />
+                <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform ${
+                  video.isGoogleDrive
+                    ? 'bg-blue-500/10 border border-blue-500/30 text-blue-400'
+                    : 'bg-netflix-red/10 border border-netflix-red/30 text-netflix-red'
+                }`}>
+                  {video.isGoogleDrive ? <Cloud className="w-5 h-5" /> : <Film className="w-5 h-5" />}
                 </div>
                 <div className="min-w-0 flex-1">
                   <h4 className="font-bold text-xs text-white truncate" title={video.originalName}>
@@ -133,8 +137,14 @@ export default function MediaLibrary({ onSelectVideo, currentUser, canControl, a
                     </span>
                     <span>•</span>
                     <span className="flex items-center gap-1">
-                      <HardDrive className="w-3 h-3 text-slate-500" />
-                      {(video.size / (1024 * 1024)).toFixed(1)} MB
+                      {video.isGoogleDrive ? (
+                        <span className="text-blue-400 font-semibold">Google Drive</span>
+                      ) : (
+                        <>
+                          <HardDrive className="w-3 h-3 text-slate-500" />
+                          {(video.size / (1024 * 1024)).toFixed(1)} MB
+                        </>
+                      )}
                     </span>
                   </div>
                 </div>
