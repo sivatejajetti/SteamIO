@@ -76,6 +76,68 @@ router.get('/stream/:filename', (req, res) => {
   }
 });
 
+const https = require('https');
+
+// Helper to follow HTTPS redirects for Google Drive video proxying
+function fetchDriveStreamWithRedirects(targetUrl, headers, res, maxRedirects = 5) {
+  if (maxRedirects === 0) {
+    return res.status(500).json({ error: 'Too many redirects while fetching Google Drive video' });
+  }
+
+  const req = https.get(targetUrl, { headers }, (googleRes) => {
+    // Handle HTTP Redirects (301, 302, 303, 307)
+    if (googleRes.statusCode >= 300 && googleRes.statusCode < 400 && googleRes.headers.location) {
+      return fetchDriveStreamWithRedirects(googleRes.headers.location, headers, res, maxRedirects - 1);
+    }
+
+    const contentType = googleRes.headers['content-type'] || 'video/mp4';
+
+    const responseHeaders = {
+      'Content-Type': contentType.includes('html') ? 'video/mp4' : contentType,
+      'Accept-Ranges': 'bytes',
+      'Cache-Control': 'no-cache, no-store, must-revalidate'
+    };
+
+    if (googleRes.headers['content-length']) {
+      responseHeaders['Content-Length'] = googleRes.headers['content-length'];
+    }
+    if (googleRes.headers['content-range']) {
+      responseHeaders['Content-Range'] = googleRes.headers['content-range'];
+    }
+
+    res.writeHead(googleRes.statusCode === 200 || googleRes.statusCode === 206 ? googleRes.statusCode : 200, responseHeaders);
+    googleRes.pipe(res);
+  });
+
+  req.on('error', (err) => {
+    console.error('Error proxying Google Drive stream:', err.message);
+    if (!res.headersSent) {
+      res.status(500).json({ error: 'Failed to stream Google Drive video' });
+    }
+  });
+}
+
+// GET /api/videos/drive-proxy/:driveId
+router.get('/drive-proxy/:driveId', (req, res) => {
+  try {
+    const driveId = req.params.driveId;
+    const targetUrl = `https://drive.google.com/uc?export=download&confirm=t&id=${driveId}`;
+
+    const forwardHeaders = {
+      'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+    };
+
+    if (req.headers.range) {
+      forwardHeaders['Range'] = req.headers.range;
+    }
+
+    fetchDriveStreamWithRedirects(targetUrl, forwardHeaders, res);
+  } catch (err) {
+    console.error('Drive proxy error:', err);
+    res.status(500).json({ error: 'Failed to proxy Google Drive video' });
+  }
+});
+
 // GET /api/videos/info/:filename
 router.get('/info/:filename', (req, res) => {
   try {

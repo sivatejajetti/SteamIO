@@ -1,3 +1,5 @@
+import { SERVER_URL } from '../services/socket';
+
 /**
  * Extracts Google Drive File ID from various link formats:
  * - https://drive.google.com/file/d/1A2B3C4D5E6F7G8H9I/view?usp=sharing
@@ -35,8 +37,8 @@ export function parseVideoUrl(inputUrl) {
     return {
       isGoogleDrive: true,
       driveId,
-      // Google User Content CDN link provides fast, unblocked HTML5 video playback
-      streamUrl: `https://lh3.googleusercontent.com/d/${driveId}`,
+      // Express proxy route handles CORS, Range requests, and Google Drive 302 redirects seamlessly
+      streamUrl: `${SERVER_URL}/api/videos/drive-proxy/${driveId}`,
       fallbackUrl: `https://drive.google.com/uc?export=download&id=${driveId}`
     };
   }
