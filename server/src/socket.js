@@ -109,7 +109,7 @@ function setupSocketHandlers(io) {
           return;
         }
 
-        console.log(`[Video] New video set in room ${currentRoom.id}: ${videoInfo.originalName}`);
+        console.log(`[Video] New video set in room ${currentRoom.id}: ${videoInfo?.originalName || 'cleared'}`);
         io.to(currentRoom.id).emit('video-updated', {
           room: result.room,
           video: result.room.video,

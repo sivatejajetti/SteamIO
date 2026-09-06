@@ -156,7 +156,11 @@ class RoomManager {
       lastUpdated: Date.now()
     };
 
-    this.addSystemMessage(roomId, `New video loaded: ${videoInfo.originalName}`);
+    if (videoInfo) {
+      this.addSystemMessage(roomId, `New video loaded: ${videoInfo.originalName}`);
+    } else {
+      this.addSystemMessage(roomId, `Host reset video selection`);
+    }
 
     return { room: this.serializeRoom(room) };
   }

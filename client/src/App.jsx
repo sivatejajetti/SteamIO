@@ -87,7 +87,11 @@ export default function App() {
 
     const onVideoUpdated = ({ room, video }) => {
       setRoom(room);
-      addToast(`New video stream loaded: ${video.originalName}`, 'info');
+      if (video) {
+        addToast(`New video stream loaded: ${video.originalName}`, 'info');
+      } else {
+        addToast('Video reset. Select or upload a new video.', 'info');
+      }
     };
 
     const onHostTransferred = ({ newHost, room }) => {
