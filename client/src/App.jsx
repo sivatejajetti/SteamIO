@@ -215,6 +215,7 @@ export default function App() {
                       onVideoUploaded={handleVideoUploaded}
                       isHost={isHost}
                       canControl={canControl}
+                      currentUser={username}
                       addToast={addToast}
                     />
                   ) : (

@@ -9,7 +9,9 @@ const dotenv = require('dotenv');
 dotenv.config();
 
 const { upload } = require('./upload');
+const mediaLibrary = require('./library');
 const streamRoutes = require('./routes/stream');
+const libraryRoutes = require('./routes/libraryRoutes');
 const setupSocketHandlers = require('./socket');
 
 const app = express();
@@ -46,6 +48,9 @@ app.use('/api/', apiLimiter);
 // Stream routes (range requests)
 app.use('/api/videos', streamRoutes);
 
+// Media Library routes
+app.use('/api/library', libraryRoutes);
+
 // Video Upload Endpoint
 app.post('/api/videos/upload', upload.single('video'), (req, res) => {
   try {
@@ -57,6 +62,7 @@ app.post('/api/videos/upload', upload.single('video'), (req, res) => {
     const protocol = req.protocol;
     const host = req.get('host');
     const streamUrl = `${protocol}://${host}/api/videos/stream/${file.filename}`;
+    const uploadedBy = req.body.uploadedBy?.trim() || 'Host';
 
     const videoInfo = {
       id: file.filename,
@@ -65,13 +71,17 @@ app.post('/api/videos/upload', upload.single('video'), (req, res) => {
       mimeType: file.mimetype,
       size: file.size,
       url: streamUrl,
+      uploadedBy,
       uploadedAt: Date.now()
     };
 
-    console.log(`[Upload] Video uploaded successfully: ${file.originalname} (${(file.size / (1024 * 1024)).toFixed(2)} MB)`);
+    // Save to persistent media library
+    mediaLibrary.addVideo(videoInfo);
+
+    console.log(`[Upload] Video saved to library for ${uploadedBy}: ${file.originalname}`);
 
     res.status(200).json({
-      message: 'Video uploaded successfully',
+      message: 'Video uploaded and saved to account library',
       video: videoInfo
     });
   } catch (err) {
